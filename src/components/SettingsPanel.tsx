@@ -1,20 +1,7 @@
 "use client";
 
 import { useState } from "react";
-
-export type Difficulty = "easy" | "medium" | "hard";
-export type ProblemMode =
-  | "add"
-  | "sub"
-  | "mul"
-  | "div"
-  | "add+sub"
-  | "add+mul"
-  | "add+div"
-  | "sub+mul"
-  | "sub+div"
-  | "mul+div"
-  | "all";
+import { Difficulty, ProblemMode } from "../lib/mathProblem";
 
 interface SettingsPanelProps {
   onStart: (difficulty: Difficulty, mode: ProblemMode) => void;

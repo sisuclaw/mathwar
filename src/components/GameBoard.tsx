@@ -1,14 +1,16 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import SettingsPanel, {
-  Difficulty,
-  ProblemMode,
-} from "./SettingsPanel";
+import SettingsPanel from "./SettingsPanel";
 import TeamPanel from "./TeamPanel";
 import TugOfWarAnimation from "./TugOfWarAnimation";
 import Timer from "./Timer";
-import { generateProblem, MathProblem } from "../lib/mathProblem";
+import {
+  generateProblem,
+  MathProblem,
+  Difficulty,
+  ProblemMode,
+} from "../lib/mathProblem";
 import { getSoundManager } from "../lib/soundManager";
 
 export default function GameBoard() {
@@ -139,7 +141,7 @@ export default function GameBoard() {
                 : "🔴 Tim Merah Menang!"}
             </div>
           ) : (
-            <div className="text-4xl font-bold mb-6">Serian! 🤝</div>
+            <div className="text-4xl font-bold mb-6">Seri! 🤝</div>
           )}
           <div className="text-2xl mb-4">
             Tim Biru: {team1Score} vs Tim Merah: {team2Score}

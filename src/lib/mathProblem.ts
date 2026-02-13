@@ -1,6 +1,19 @@
 "use client";
 
-import { Difficulty, ProblemMode as ProblemModeType } from "./SettingsPanel";
+// Type definitions - moved from SettingsPanel to avoid circular dependency
+export type Difficulty = "easy" | "medium" | "hard";
+export type ProblemMode =
+  | "add"
+  | "sub"
+  | "mul"
+  | "div"
+  | "add+sub"
+  | "add+mul"
+  | "add+div"
+  | "sub+mul"
+  | "sub+div"
+  | "mul+div"
+  | "all";
 
 export interface MathProblem {
   num1: number;
@@ -11,7 +24,7 @@ export interface MathProblem {
 
 function generateProblem(
   difficulty: Difficulty,
-  mode: ProblemModeType
+  mode: ProblemMode
 ): MathProblem {
   let operators: string[] = [];
   let maxNum = 10;
