@@ -125,30 +125,45 @@ export default function GameBoard() {
 
   // Render Settings
   if (gameState === "settings") {
-    return <SettingsPanel onStart={handleStartGame} />;
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
+        <SettingsPanel onStart={handleStartGame} />
+      </div>
+    );
   }
 
   // Render Game Ended
   if (gameState === "ended") {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen p-4">
-        <div className="max-w-2xl w-full bg-gray-800 rounded-xl p-8 shadow-2xl text-center">
-          <h1 className="text-5xl font-bold mb-4">Game Berakhir!</h1>
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center p-4">
+        <div className="max-w-2xl w-full bg-gray-800/90 backdrop-blur-sm rounded-3xl p-10 shadow-2xl text-center border-2 border-gray-700">
           {winner ? (
-            <div className="text-4xl font-bold mb-6 animate-bounce">
-              {winner === "blue"
-                ? "🔵 Tim Biru Menang!"
-                : "🔴 Tim Merah Menang!"}
-            </div>
+            <>
+              <div className="text-8xl mb-6 animate-bounce">
+                {winner === "blue" ? "🔵" : "🔴"}
+              </div>
+              <h1 className="text-5xl md:text-6xl font-bold mb-4 bg-gradient-to-r from-blue-400 to-blue-600 bg-clip-text text-transparent">
+                {winner === "blue" ? "Tim Biru" : "Tim Merah"} Menang!
+              </h1>
+            </>
           ) : (
-            <div className="text-4xl font-bold mb-6">Seri! 🤝</div>
+            <>
+              <div className="text-8xl mb-6">🤝</div>
+              <h1 className="text-5xl md:text-6xl font-bold mb-4 text-gray-200">
+                Seri!
+              </h1>
+            </>
           )}
-          <div className="text-2xl mb-4">
-            Tim Biru: {team1Score} vs Tim Merah: {team2Score}
+
+          <div className="text-3xl md:text-4xl font-bold mb-8 py-4 px-6 bg-gray-700/50 rounded-2xl">
+            Tim Biru: <span className="text-blue-400">{team1Score}</span>{" "}
+            vs{" "}
+            Tim Merah: <span className="text-red-400">{team2Score}</span>
           </div>
+
           <button
             onClick={() => setGameState("settings")}
-            className="bg-primary hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-lg text-xl"
+            className="bg-gradient-to-r from-primary to-secondary text-white font-bold py-5 px-10 rounded-2xl text-2xl shadow-2xl transform transition-all duration-200 hover:scale-105 active:scale-95 hover:shadow-3xl"
           >
             Main Lagi 🔄
           </button>
@@ -159,26 +174,20 @@ export default function GameBoard() {
 
   // Render Playing Game
   return (
-    <main className="min-h-screen p-4">
+    <main className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 p-4">
       {/* Header */}
-      <div className="text-center mb-4">
-        <h1 className="text-4xl font-bold mb-2">Math Tug of War</h1>
-        <Timer
-          timeLeft={timeLeft}
-          onTimeUp={handleTimeUp}
-          isRunning={gameState === "playing"}
-        />
+      <div className="text-center mb-6">
+        <h1 className="text-4xl md:text-5xl font-bold mb-4 text-white">
+          Math Tug of War
+        </h1>
+        <Timer timeLeft={timeLeft} onTimeUp={handleTimeUp} isRunning={gameState === "playing"} />
       </div>
 
       {/* Tug of War Animation */}
-      <TugOfWarAnimation
-        team1Score={team1Score}
-        team2Score={team2Score}
-        winner={winner}
-      />
+      <TugOfWarAnimation team1Score={team1Score} team2Score={team2Score} winner={winner} />
 
       {/* Team Panels */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-10">
         <TeamPanel
           teamName="Tim Biru"
           teamColor="blue"

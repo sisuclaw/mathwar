@@ -39,18 +39,25 @@ export default function Timer({
   const minutes = Math.floor(displayTime / 60);
   const seconds = displayTime % 60;
   const isLow = displayTime <= 10 && displayTime > 0;
+  const isCritical = displayTime <= 5 && displayTime > 0;
 
   return (
-    <div className="text-center">
+    <div className="flex flex-col items-center">
       <div
-        className={`text-6xl font-bold ${
-          isLow ? "text-red-500 animate-pulse" : "text-white"
+        className={`px-8 py-4 rounded-2xl font-black text-6xl md:text-7xl transition-all duration-300 ${
+          isCritical
+            ? "bg-red-600 text-white animate-pulse shadow-2xl shadow-red-500/50"
+            : isLow
+            ? "bg-yellow-500 text-gray-900 shadow-xl shadow-yellow-500/50"
+            : "bg-gray-700 text-white shadow-lg"
         }`}
       >
         {String(minutes).padStart(2, "0")}:
         {String(seconds).padStart(2, "0")}
       </div>
-      <div className="text-gray-400 text-lg mt-2">Waktu Tersisa</div>
+      <div className="text-gray-400 text-lg mt-3 font-semibold">
+        Waktu Tersisa
+      </div>
     </div>
   );
 }
