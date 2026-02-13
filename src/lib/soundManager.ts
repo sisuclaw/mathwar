@@ -8,7 +8,11 @@ export class SoundManager {
     }
   }
 
-  private playTone(frequency: number, duration: number, type: OscillatorType = "sine"): void {
+  private playTone(
+    frequency: number,
+    duration: number,
+    type: OscillatorType = "sine"
+  ): void {
     if (!this.audioContext) return;
 
     const oscillator = this.audioContext.createOscillator();
@@ -30,28 +34,29 @@ export class SoundManager {
     oscillator.stop(this.audioContext.currentTime + duration);
   }
 
-  playCorrect(): void {
-    // Happy ding sound
-    this.playTone(800, 0.15, "sine");
-    setTimeout(() => this.playTone(1000, 0.2, "sine"), 100);
-  }
-
-  playWrong(): void {
-    // Low buzz sound
-    this.playTone(200, 0.2, "sawtooth");
-  }
-
-  playWin(): void {
-    // Victory sound!
-    const notes = [523, 659, 784, 1047]; // C5, E5, G5, C6
-    notes.forEach((freq, i) => {
-      setTimeout(() => this.playTone(freq, 0.3, "square"), i * 150);
-    });
-  }
-
-  playTick(): void {
-    // Quick tick sound
-    this.playTone(1000, 0.05, "sine");
+  play(soundName: string): void {
+    switch (soundName) {
+      case "correct":
+        // Happy ding sound
+        this.playTone(800, 0.15, "sine");
+        setTimeout(() => this.playTone(1000, 0.2, "sine"), 100);
+        break;
+      case "wrong":
+        // Low buzz sound
+        this.playTone(200, 0.2, "sawtooth");
+        break;
+      case "win":
+        // Victory sound!
+        const notes = [523, 659, 784, 1047]; // C5, E5, G5, C6
+        notes.forEach((freq, i) => {
+          setTimeout(() => this.playTone(freq, 0.3, "square"), i * 150);
+        });
+        break;
+      case "tick":
+        // Quick tick sound
+        this.playTone(1000, 0.05, "sine");
+        break;
+    }
   }
 
   async loadAllSounds(): Promise<void> {
