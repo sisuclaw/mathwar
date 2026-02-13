@@ -29,6 +29,7 @@ function generateProblem(
   let operators: string[] = [];
   let maxNum = 10;
   let minNum = 1;
+  let answer: number = 0; // Initialize answer to fix TypeScript error
 
   // Determine operators based on mode
   switch (mode) {
@@ -83,7 +84,6 @@ function generateProblem(
   const operator = operators[Math.floor(Math.random() * operators.length)];
   let num1 = Math.floor(Math.random() * (maxNum - minNum + 1)) + minNum;
   let num2 = Math.floor(Math.random() * (maxNum - minNum + 1)) + minNum;
-  let answer: number;
 
   // Generate numbers based on operator
   switch (operator) {
@@ -112,18 +112,16 @@ function generateProblem(
       break;
     case "÷":
       // For division, ensure clean division
-      answer = Math.floor(Math.random() * 12) + 1;
-      num2 = Math.floor(Math.random() * 12) + 1;
-      num1 = answer * num2;
+      // First generate the answer and divisor, then calculate dividend
+      let divisor = 12;
       if (difficulty === "medium") {
-        answer = Math.floor(Math.random() * 15) + 1;
-        num2 = Math.floor(Math.random() * 15) + 1;
-        num1 = answer * num2;
+        divisor = 15;
       } else if (difficulty === "hard") {
-        answer = Math.floor(Math.random() * 20) + 1;
-        num2 = Math.floor(Math.random() * 20) + 1;
-        num1 = answer * num2;
+        divisor = 20;
       }
+      answer = Math.floor(Math.random() * divisor) + 1;
+      num2 = Math.floor(Math.random() * divisor) + 1;
+      num1 = answer * num2; // Dividend = answer × divisor
       break;
   }
 
