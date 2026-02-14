@@ -1,36 +1,39 @@
 "use client";
 
 import { useState } from "react";
+import { Difficulty, ProblemMode } from "../lib/mathProblem";
 
 interface SettingsPanelProps {
-  onStart: (difficulty: "easy" | "medium" | "hard", mode: "add" | "sub" | "mul" | "div" | "add+sub" | "add+mul" | "add+div" | "sub+mul" | "sub+div" | "mul+div" | "all", playerName: string) => void;
+  onStart: (difficulty: Difficulty, mode: ProblemMode, playerName: string) => void;
 }
 
-const difficulties = [
-  { value: "easy" as const, label: "Mudah", description: "1-10 (±,×,÷)", color: "bg-green-500 hover:bg-green-600" },
-  { value: "medium" as const, label: "Sedang", description: "1-50 (±,×,÷)", color: "bg-yellow-500 hover:bg-yellow-600" },
-  { value: "hard" as const, label: "Sulit", description: "1-100 (±,×,÷)", color: "bg-red-500 hover:bg-red-600" },
+const difficulties: { value: Difficulty; label: string; color: string }[] = [
+  { value: "easy", label: "Easy", color: "from-green-500 to-green-600" },
+  { value: "medium", label: "Medium", color: "from-yellow-500 to-yellow-600" },
+  { value: "hard", label: "Hard", color: "from-red-500 to-red-600" },
 ];
 
-const singleModes = [
-  { value: "add" as const, label: "Tambah", icon: "➕" },
-  { value: "sub" as const, label: "Kurang", icon: "➖" },
-  { value: "mul" as const, label: "Kali", icon: "✖️" },
-  { value: "div" as const, label: "Bagi", icon: "➗" },
+const problemModes: { value: ProblemMode; label: string; icon: string }[] = [
+  { value: "add", label: "Tambah", icon: "➕" },
+  { value: "sub", label: "Kurang", icon: "➖" },
+  { value: "mul", label: "Kali", icon: "✖️" },
+  { value: "div", label: "Bagi", icon: "➗" },
 ];
 
-const combinationModes = [
-  { value: "add+sub" as const, label: "Tambah + Kurang", icon: "➕➖" },
-  { value: "add+mul" as const, label: "Tambah + Kali", icon: "➕✖️" },
-  { value: "add+div" as const, label: "Tambah + Bagi", icon: "➕➗" },
-  { value: "sub+mul" as const, label: "Kurang + Kali", icon: "➖✖️" },
-  { value: "sub+div" as const, label: "Kurang + Bagi", icon: "➖➗" },
-  { value: "mul+div" as const, label: "Kali + Bagi", icon: "✖️➗" },
+const combinationModes: { value: ProblemMode; label: string; icon: string }[] = [
+  { value: "add+sub", label: "Tambah + Kurang", icon: "➕➖" },
+  { value: "add+mul", label: "Tambah + Kali", icon: "➕✖️" },
+  { value: "add+div", label: "Tambah + Bagi", icon: "➕➗" },
+  { value: "sub+mul", label: "Kurang + Kali", icon: "➖✖️" },
+  { value: "sub+div", label: "Kurang + Bagi", icon: "➖➗" },
+  { value: "mul+div", label: "Kali + Bagi", icon: "✖️➗" },
+  { value: "all", label: "Campuran Semua", icon: "🎲" },
 ];
 
 export default function SettingsPanel({ onStart }: SettingsPanelProps) {
-  const [difficulty, setDifficulty] = useState<"easy" | "medium" | "hard">("easy");
-  const [mode, setMode] = useState<"add" | "sub" | "mul" | "div" | "add+sub" | "add+mul" | "add+div" | "sub+mul" | "sub+div" | "mul+div" | "all">("add");
+  const [difficulty, setDifficulty] = useState<Difficulty>("easy");
+  const [mode, setMode] = useState<ProblemMode>("add");
+  const [showCombinations, setShowCombinations] = useState(false);
   const [playerName, setPlayerName] = useState("");
 
   const handleStart = () => {
@@ -42,132 +45,152 @@ export default function SettingsPanel({ onStart }: SettingsPanelProps) {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-600 to-gray-900 flex items-center justify-center p-6">
-      <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl p-8 border-4 border-blue-200">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 p-4 md:p-8">
+      <div className="max-w-4xl mx-auto">
         {/* Header */}
-        <div className="text-center mb-8">
-          <div className="flex items-center justify-center gap-3 mb-4">
-            <span className="text-6xl">🧮</span>
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-              Tug of War Mathematics
-            </h1>
-            <div className="text-2xl text-gray-600">⚔️ Kalahkan Robot!</div>
-          </div>
+        <div className="text-center mb-12">
+          <h1 className="text-5xl md:text-6xl font-bold mb-4 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+            Math Tug of War
+          </h1>
+          <p className="text-3xl">🧮⚔️</p>
         </div>
 
-        {/* Tingkat Kesulitan */}
-        <div className="mb-8">
-          <h2 className="text-2xl font-bold mb-4 text-gray-800">Pilih Tingkat Kesulitan</h2>
+        {/* Difficulty Selection */}
+        <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-6 md:p-8 mb-6 border border-gray-700">
+          <h2 className="text-2xl md:text-3xl font-bold mb-6 text-center text-gray-200">
+            Pilih Tingkat Kesulitan
+          </h2>
           <div className="grid grid-cols-3 gap-4">
             {difficulties.map((diff) => (
               <button
                 key={diff.value}
                 onClick={() => setDifficulty(diff.value)}
                 className={`
-                  relative overflow-hidden rounded-2xl p-6 font-bold text-xl
+                  relative overflow-hidden rounded-xl p-6 font-bold text-xl
                   transform transition-all duration-200 hover:scale-105 active:scale-95
                   ${
                     difficulty === diff.value
-                      ? `bg-gradient-to-r ${diff.color} text-white shadow-2xl ring-4 ring-offset-4 ring-${diff.color.split("-")[1]}-400`
-                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                      ? `bg-gradient-to-r ${diff.color} text-white shadow-lg`
+                      : "bg-gray-700 text-gray-300 hover:bg-gray-600"
                   }
                 `}
               >
-                <div className="flex flex-col items-center gap-2">
-                  <span className="text-3xl">{diff.label}</span>
-                  {difficulty === diff.value && (
-                    <div className="text-sm font-medium mt-1 opacity-90">
-                      {diff.description}
-                    </div>
+                {diff.label}
+                {difficulty === diff.value && (
+                  <div className="absolute inset-0 border-4 border-white rounded-xl animate-pulse" />
+                )}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Problem Mode Selection */}
+        <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-6 md:p-8 mb-6 border border-gray-700">
+          <h2 className="text-2xl md:text-3xl font-bold mb-6 text-center text-gray-200">
+            Pilih Mode Soal
+          </h2>
+
+          {/* Single Operations */}
+          <div className="mb-6">
+            <h3 className="text-lg font-semibold mb-4 text-gray-400">Operasi Tunggal</h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {problemModes.map((problemMode) => (
+                <button
+                  key={problemMode.value}
+                  onClick={() => setMode(problemMode.value)}
+                  className={`
+                    relative rounded-xl p-5 font-semibold text-lg
+                    transform transition-all duration-200 hover:scale-105 active:scale-95
+                    flex flex-col items-center gap-2
+                    ${
+                      mode === problemMode.value
+                        ? "bg-gradient-to-br from-blue-600 to-blue-700 text-white shadow-lg"
+                        : "bg-gray-700 text-gray-300 hover:bg-gray-600"
+                    }
+                  `}
+                >
+                  <span className="text-2xl">{problemMode.icon}</span>
+                  <span>{problemMode.label}</span>
+                  {mode === problemMode.value && (
+                    <div className="absolute inset-0 border-2 border-white rounded-xl" />
                   )}
-                </div>
-              </button>
-            ))}
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
 
-        {/* Operasi Matematika */}
-        <div className="mb-8">
-          <h2 className="text-2xl font-bold mb-4 text-gray-800">Pilih Operasi</h2>
-          <div className="grid grid-cols-2 gap-3 mb-6">
-            {singleModes.map((problemMode) => (
-              <button
-                key={problemMode.value}
-                onClick={() => setMode(problemMode.value)}
-                className={`
-                  flex flex-col items-center gap-2 rounded-2xl p-5 font-bold text-lg
-                  transform transition-all duration-200 hover:scale-105 active:scale-95 border-2
-                  ${
-                    mode === problemMode.value
-                      ? "border-blue-500 bg-blue-50 text-blue-700 ring-2 ring-blue-400"
-                      : "border-gray-300 bg-white text-gray-700 hover:border-blue-400 hover:bg-blue-50"
-                  }
-                `}
-              >
-                <span className="text-2xl">{problemMode.icon}</span>
-                <span>{problemMode.label}</span>
-              </button>
-            ))}
-          </div>
-          <div className="flex justify-center mt-4">
+          {/* Combination Operations */}
+          <div>
             <button
-              onClick={() => setMode("all")}
-              className={`
-                flex items-center gap-2 rounded-2xl p-4 font-bold text-base
-                transform transition-all duration-200 hover:scale-105 active:scale-95 border-2
-                ${
-                  mode === "all"
-                    ? "border-indigo-500 bg-indigo-50 text-indigo-700 ring-2 ring-indigo-400"
-                    : "border-gray-300 bg-white text-gray-700 hover:border-indigo-400 hover:bg-indigo-50"
-                }
-              `}
+              onClick={() => setShowCombinations(!showCombinations)}
+              className="w-full bg-gray-700 hover:bg-gray-600 text-gray-200 rounded-xl p-4 mb-4 font-semibold flex items-center justify-between transition-colors"
             >
-              <span className="text-xl">🎲</span>
-              <span>Campuran Semua</span>
+              <span className="flex items-center gap-2">
+                <span>🎚️</span>
+                <span>Operasi Gabungan</span>
+              </span>
+              <span className={`transform transition-transform ${showCombinations ? "rotate-180" : ""}`}>
+                ▼
+              </span>
             </button>
-          </div>
-          <div className="grid grid-cols-2 gap-3 mt-4">
-            {combinationModes.map((problemMode) => (
-              <button
-                key={problemMode.value}
-                onClick={() => setMode(problemMode.value)}
-                className={`
-                  flex items-center gap-2 rounded-xl p-3 font-medium text-sm
-                  transform transition-all duration-200 hover:scale-105 active:scale-95 border-2
-                  ${
-                    mode === problemMode.value
-                      ? "border-indigo-500 bg-indigo-50 text-indigo-700"
-                      : "border-gray-300 bg-white text-gray-700 hover:border-indigo-400 hover:bg-indigo-50"
-                  }
-                `}
-              >
-                <span className="text-lg">{problemMode.icon}</span>
-                <span>{problemMode.label}</span>
-              </button>
-            ))}
+
+            {showCombinations && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4 animate-fade-in">
+                {combinationModes.map((problemMode) => (
+                  <button
+                      key={problemMode.value}
+                      onClick={() => setMode(problemMode.value)}
+                      className={`
+                        relative rounded-xl p-4 font-medium text-base
+                        transform transition-all duration-200 hover:scale-102 active:scale-98
+                        flex items-center gap-3
+                        ${
+                          mode === problemMode.value
+                            ? "bg-gradient-to-br from-purple-600 to-purple-700 text-white shadow-lg"
+                            : "bg-gray-700 text-gray-300 hover:bg-gray-600"
+                        }
+                      `}
+                    >
+                      <span className="text-xl">{problemMode.icon}</span>
+                        <span>{problemMode.label}</span>
+                      {mode === problemMode.value && (
+                          <div className="absolute inset-0 border-2 border-white rounded-xl" />
+                        )}
+                    </button>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 
-        {/* Nama Kamu */}
-        <div className="mb-8">
-          <h2 className="text-2xl font-bold mb-4 text-gray-800">Nama Kamu</h2>
+        {/* Player Name */}
+        <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-6 md:p-8 mb-6 border border-gray-700">
+          <h2 className="text-2xl md:text-3xl font-bold mb-6 text-center text-gray-200">
+            Nama Kamu
+          </h2>
           <input
             type="text"
             value={playerName}
             onChange={(e) => setPlayerName(e.target.value)}
             placeholder="Contoh: Budi"
-            className="w-full px-6 py-4 text-xl rounded-2xl border-2 border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-400 bg-white"
+            className="w-full px-6 py-4 text-xl rounded-xl border-2 border-gray-600 focus:border-blue-400 focus:outline-none bg-gray-700 text-white placeholder-gray-400"
             maxLength={20}
           />
         </div>
 
-        {/* Start Button */}
+        {/* Start Game Button */}
         <button
             onClick={handleStart}
-            className="w-full bg-gradient-to-r from-green-500 to-green-600 text-white font-bold py-5 px-8 rounded-2xl text-2xl shadow-xl transform transition-all duration-200 hover:scale-105 active:scale-95 hover:shadow-2xl"
+            className="w-full bg-gradient-to-r from-primary to-secondary text-white font-bold py-6 px-8 rounded-2xl text-2xl shadow-2xl transform transition-all duration-200 hover:scale-105 active:scale-95 hover:shadow-3xl"
           >
           Lawan Robot! 🤖
         </button>
+
+        {/* Info */}
+        <p className="text-center text-gray-400 text-base mt-6 leading-relaxed">
+          Kalahkan robot dengan menjawab soal matematika lebih cepat dan lebih banyak!<br />
+          Semakin sulit, semakin pintar robot-nya.
+        </p>
       </div>
     </div>
   );
