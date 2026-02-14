@@ -4,12 +4,16 @@ interface TugOfWarAnimationProps {
   team1Score: number;
   team2Score: number;
   winner: "blue" | "red" | null;
+  team1Name?: string;
+  team2Name?: string;
 }
 
 export default function TugOfWarAnimation({
   team1Score,
   team2Score,
   winner,
+  team1Name = "Tim Biru",
+  team2Name = "Tim Merah",
 }: TugOfWarAnimationProps) {
   const totalScore = team1Score + team2Score;
   const team1Percent = totalScore > 0 ? (team1Score / totalScore) * 100 : 50;
@@ -32,9 +36,9 @@ export default function TugOfWarAnimation({
       {winner && (
         <div className="mb-6 text-4xl md:text-5xl font-bold animate-bounce text-center">
           {winner === "blue" ? (
-            <span className="text-blue-400">🔵 Tim Biru Menang!</span>
+            <span className="text-blue-400">🎉 {team1Name} Menang!</span>
           ) : (
-            <span className="text-red-400">🔴 Tim Merah Menang!</span>
+            <span className="text-red-400">🤖 {team2Name} Menang!</span>
           )}
         </div>
       )}
@@ -64,11 +68,11 @@ export default function TugOfWarAnimation({
 
         {/* Characters */}
         <div className="absolute inset-0 flex items-center justify-between px-6 md:px-10">
-          {/* Blue Character */}
-          <div className="text-6xl md:text-7xl animate-pulse">🧍</div>
+          {/* Blue Character - Player */}
+          <div className="text-6xl md:text-7xl animate-pulse">🙋</div>
 
-          {/* Red Character */}
-          <div className="text-6xl md:text-7xl animate-pulse">🧍</div>
+          {/* Red Character - Robot */}
+          <div className="text-6xl md:text-7xl animate-pulse">🤖</div>
         </div>
 
         {/* Center Marker */}
@@ -86,11 +90,11 @@ export default function TugOfWarAnimation({
       {/* Score Display */}
       <div className="flex justify-between w-full max-w-5xl mt-6 text-2xl md:text-3xl font-bold">
         <div className="bg-blue-900/60 px-6 py-3 rounded-xl border-2 border-blue-500 shadow-lg shadow-blue-500/30">
-          Tim Biru: <span className="text-blue-400">{team1Score}</span>
+          {team1Name}: <span className="text-blue-400">{team1Score}</span>
         </div>
         <div className="text-gray-400 font-black">VS</div>
         <div className="bg-red-900/60 px-6 py-3 rounded-xl border-2 border-red-500 shadow-lg shadow-red-500/30">
-          Tim Merah: <span className="text-red-400">{team2Score}</span>
+          {team2Name}: <span className="text-red-400">{team2Score}</span>
         </div>
       </div>
     </div>

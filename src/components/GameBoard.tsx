@@ -20,15 +20,17 @@ export default function GameBoard() {
   >("settings");
   const [difficulty, setDifficulty] = useState<Difficulty>("easy");
   const [mode, setMode] = useState<ProblemMode>("add");
-  const [timeLeft, setTimeLeft] = useState(120); // 2 minutes
+  const [timeLeft, setTimeLeft] = useState(120);
+  const [playerName, setPlayerName] = useState("");
 
   // Team States
-  const [team1Problem, setTeam1Problem] = useState<MathProblem | null>(null);
-  const [team2Problem, setTeam2Problem] = useState<MathProblem | null>(null);
-  const [team1Score, setTeam1Score] = useState(0);
-  const [team2Score, setTeam2Score] = useState(0);
-  const [activeTeam, setActiveTeam] = useState<1 | 2>(1); // Which team's turn
-  const [winner, setWinner] = useState<"blue" | "red" | null>(null);
+  const [playerProblem, setPlayerProblem] = useState<MathProblem | null>(null);
+  const [playerScore, setPlayerScore] = useState(0);
+  const [robotScore, setRobotScore] = useState(0);
+  const [winner, setWinner] = useState<"player" | "robot" | null>(null);
+
+  // Robot AI
+  const [robotThinking, setRobotThinking] = useState(false);
 
   // Sound Manager
   const [soundsLoaded, setSoundsLoaded] = useState(false);
@@ -45,25 +47,22 @@ export default function GameBoard() {
 
   // Start Game Handler
   const handleStartGame = useCallback(
-    (selectedDifficulty: Difficulty, selectedMode: ProblemMode) => {
-      setDifficulty(selectedDifficulty);
-      setMode(selectedMode);
+    (difficulty: Difficulty, mode: ProblemMode, playerName: string) => {
+      setDifficulty(difficulty);
+      setMode(mode);
+      setPlayerName(playerName);
 
-      // Generate initial problems
-      const prob1 = generateProblem(selectedDifficulty, selectedMode);
-      const prob2 = generateProblem(selectedDifficulty, selectedMode);
-      setTeam1Problem(prob1);
-      setTeam2Problem(prob2);
+      // Generate initial problem
+      const prob = generateProblem(difficulty, mode);
+      setPlayerProblem(prob);
 
       // Reset scores
-      setTeam1Score(0);
-      setTeam2Score(0);
+      setPlayerScore(0);
+      setRobotScore(0);
 
       // Set time based on difficulty
-      const timeMap = { easy: 180, medium: 120, hard: 60 }; // seconds
-      setTimeLeft(timeMap[selectedDifficulty]);
-
-      setActiveTeam(Math.random() > 0.5 ? 1 : 2); // Random start
+      const timeMap = { easy: 180, medium: 120, hard: 60 };
+      setTimeLeft(timeMap[difficulty]);
 
       setGameState("playing");
       setWinner(null);
@@ -71,39 +70,61 @@ export default function GameBoard() {
     []
   );
 
-  // Handle Answer
-  const handleAnswer = useCallback(
-    (team: 1 | 2, answer: number) => {
-      const soundManager = getSoundManager();
+  // Robot AI Logic
+  useEffect(() => {
+    if (gameState !== "playing" || robotThinking) return;
 
-      if (team === 1) {
-        if (team1Problem && answer === team1Problem.answer) {
-          // Correct!
-          soundManager.play("correct");
-          setTeam1Score((prev) => prev + 1);
-          const newProblem = generateProblem(difficulty, mode);
-          setTeam1Problem(newProblem);
-        } else {
-          // Wrong!
-          soundManager.play("wrong");
-        }
-      } else if (team === 2) {
-        if (team2Problem && answer === team2Problem.answer) {
-          // Correct!
-          soundManager.play("correct");
-          setTeam2Score((prev) => prev + 1);
-          const newProblem = generateProblem(difficulty, mode);
-          setTeam2Problem(newProblem);
-        } else {
-          // Wrong!
-          soundManager.play("wrong");
-        }
+    // Robot thinks based on difficulty
+    const thinkTime = {
+      easy: 5000, // 5 seconds
+      medium: 3000, // 3 seconds
+      hard: 1500, // 1.5 seconds
+    };
+
+    setRobotThinking(true);
+
+    const timer = setTimeout(() => {
+      // Robot answers with accuracy based on difficulty
+      const accuracy = {
+        easy: 0.9, // 90% correct
+        medium: 0.7, // 70% correct
+        hard: 0.5, // 50% correct
+      };
+
+      const isCorrect = Math.random() < accuracy[difficulty];
+
+      if (isCorrect) {
+        const soundManager = getSoundManager();
+        soundManager.play("correct");
+        setRobotScore((prev) => prev + 1);
+      } else {
+        const soundManager = getSoundManager();
+        soundManager.play("wrong");
       }
 
-      // Switch active team
-      setActiveTeam((prev) => (prev === 1 ? 2 : 1));
+      setRobotThinking(false);
+    }, thinkTime[difficulty]);
+
+    return () => clearTimeout(timer);
+  }, [gameState, difficulty, robotThinking, playerScore]);
+
+  // Handle Player Answer
+  const handlePlayerAnswer = useCallback(
+    (answer: number) => {
+      const soundManager = getSoundManager();
+
+      if (playerProblem && answer === playerProblem.answer) {
+        // Correct!
+        soundManager.play("correct");
+        setPlayerScore((prev) => prev + 1);
+        const newProblem = generateProblem(difficulty, mode);
+        setPlayerProblem(newProblem);
+      } else {
+        // Wrong!
+        soundManager.play("wrong");
+      }
     },
-    [difficulty, mode, team1Problem, team2Problem]
+    [difficulty, mode, playerProblem]
   );
 
   // Handle Time Up
@@ -111,22 +132,22 @@ export default function GameBoard() {
     setGameState("ended");
     const soundManager = getSoundManager();
 
-    if (team1Score > team2Score) {
-      setWinner("blue");
+    if (playerScore > robotScore) {
+      setWinner("player");
       soundManager.play("win");
-    } else if (team2Score > team1Score) {
-      setWinner("red");
+    } else if (robotScore > playerScore) {
+      setWinner("robot");
       soundManager.play("win");
     } else {
       // Draw
       soundManager.play("win");
     }
-  }, [team1Score, team2Score]);
+  }, [playerScore, robotScore]);
 
   // Render Settings
   if (gameState === "settings") {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-600 to-gray-900">
         <SettingsPanel onStart={handleStartGame} />
       </div>
     );
@@ -135,37 +156,44 @@ export default function GameBoard() {
   // Render Game Ended
   if (gameState === "ended") {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center p-4">
-        <div className="max-w-2xl w-full bg-gray-800/90 backdrop-blur-sm rounded-3xl p-10 shadow-2xl text-center border-2 border-gray-700">
-          {winner ? (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-600 to-gray-900 flex items-center justify-center p-4">
+        <div className="max-w-2xl w-full bg-white rounded-3xl shadow-2xl p-10 text-center border-4 border-indigo-200">
+          {winner === "player" ? (
             <>
-              <div className="text-8xl mb-6 animate-bounce">
-                {winner === "blue" ? "🔵" : "🔴"}
-              </div>
-              <h1 className="text-5xl md:text-6xl font-bold mb-4 bg-gradient-to-r from-blue-400 to-blue-600 bg-clip-text text-transparent">
-                {winner === "blue" ? "Tim Biru" : "Tim Merah"} Menang!
+              <div className="text-8xl mb-6 animate-bounce">🎉</div>
+              <h1 className="text-5xl md:text-6xl font-bold mb-4 bg-gradient-to-r from-green-500 to-emerald-600 bg-clip-text text-transparent">
+                Kamu Menang!
               </h1>
+              <p className="text-2xl text-gray-600 mb-6">Luar biasa, {playerName}!</p>
+            </>
+          ) : winner === "robot" ? (
+            <>
+              <div className="text-8xl mb-6">🤖</div>
+              <h1 className="text-5xl md:text-6xl font-bold mb-4 bg-gradient-to-r from-red-500 to-orange-600 bg-clip-text text-transparent">
+                Robot Menang!
+              </h1>
+              <p className="text-2xl text-gray-600 mb-6">Jangan menyerah, {playerName}!</p>
             </>
           ) : (
             <>
               <div className="text-8xl mb-6">🤝</div>
-              <h1 className="text-5xl md:text-6xl font-bold mb-4 text-gray-200">
+              <h1 className="text-5xl md:text-6xl font-bold mb-4 text-gray-800">
                 Seri!
               </h1>
             </>
           )}
 
-          <div className="text-3xl md:text-4xl font-bold mb-8 py-4 px-6 bg-gray-700/50 rounded-2xl">
-            Tim Biru: <span className="text-blue-400">{team1Score}</span>{" "}
+          <div className="text-3xl md:text-4xl font-bold mb-8 py-4 px-6 bg-indigo-50 rounded-2xl">
+            {playerName}: <span className="text-blue-600">{playerScore}</span>{" "}
             vs{" "}
-            Tim Merah: <span className="text-red-400">{team2Score}</span>
+            Robot 🤖: <span className="text-red-600">{robotScore}</span>
           </div>
 
           <button
             onClick={() => setGameState("settings")}
-            className="bg-gradient-to-r from-primary to-secondary text-white font-bold py-5 px-10 rounded-2xl text-2xl shadow-2xl transform transition-all duration-200 hover:scale-105 active:scale-95 hover:shadow-3xl"
+            className="bg-gradient-to-r from-green-500 to-green-600 text-white font-bold py-5 px-10 rounded-2xl text-2xl shadow-xl transform transition-all duration-200 hover:scale-105 active:scale-95 hover:shadow-2xl"
           >
-            Main Lagi 🔄
+            Main Lagi! 🔄
           </button>
         </div>
       </div>
@@ -174,36 +202,52 @@ export default function GameBoard() {
 
   // Render Playing Game
   return (
-    <main className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 p-4">
+    <main className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-600 to-gray-900 p-4">
       {/* Header */}
       <div className="text-center mb-6">
-        <h1 className="text-4xl md:text-5xl font-bold mb-4 text-white">
-          Math Tug of War
+        <h1 className="text-4xl md:text-5xl font-bold mb-2 text-white drop-shadow-lg">
+          {playerName} vs Robot 🤖
         </h1>
         <Timer timeLeft={timeLeft} onTimeUp={handleTimeUp} isRunning={gameState === "playing"} />
       </div>
 
       {/* Tug of War Animation */}
-      <TugOfWarAnimation team1Score={team1Score} team2Score={team2Score} winner={winner} />
+      <TugOfWarAnimation
+        team1Score={playerScore}
+        team2Score={robotScore}
+        winner={winner === "player" ? "blue" : winner === "robot" ? "red" : null}
+        team1Name={playerName}
+        team2Name="Robot"
+      />
 
-      {/* Team Panels */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-10">
+      {/* Player Panel */}
+      <div className="max-w-2xl mx-auto mt-10">
         <TeamPanel
-          teamName="Tim Biru"
+          teamName={playerName || "Kamu"}
           teamColor="blue"
-          problem={team1Problem}
-          onAnswer={(answer) => handleAnswer(1, answer)}
-          isActive={activeTeam === 1}
-          score={team1Score}
+          problem={playerProblem}
+          onAnswer={handlePlayerAnswer}
+          isActive={true}
+          score={playerScore}
         />
-        <TeamPanel
-          teamName="Tim Merah"
-          teamColor="red"
-          problem={team2Problem}
-          onAnswer={(answer) => handleAnswer(2, answer)}
-          isActive={activeTeam === 2}
-          score={team2Score}
-        />
+      </div>
+
+      {/* Robot Status */}
+      <div className="fixed bottom-8 right-8 bg-white rounded-2xl shadow-2xl p-6 border-4 border-red-200">
+        <div className="flex items-center gap-3">
+          <div className="text-4xl animate-pulse">
+            {robotThinking ? "🤔" : "🤖"}
+          </div>
+          <div>
+            <div className="text-xl font-bold text-gray-800">Robot</div>
+            <div className="text-sm text-gray-600">
+              {robotThinking ? "Sedang berpikir..." : "Siap!"}
+            </div>
+            <div className="text-2xl font-bold text-red-600 mt-1">
+              Skor: {robotScore}
+            </div>
+          </div>
+        </div>
       </div>
     </main>
   );
