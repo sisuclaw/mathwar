@@ -47,7 +47,7 @@ export default function GameBoard() {
 
   // Start Game Handler
   const handleStartGame = useCallback(
-    (difficulty: Difficulty, mode: ProblemMode, playerName: string) => {
+    (difficulty: Difficulty, playerName: string, mode: ProblemMode) => {
       setDifficulty(difficulty);
       setMode(mode);
       setPlayerName(playerName);
